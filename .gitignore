@@ -1,0 +1,33 @@
+# 忽略 Python 的快取和虛擬環境
+__pycache__/
+*.pyc
+.env
+.venv
+venv/
+
+# 忽略 Conda 相關的設定（如果有的話）
+.conda/
+*.conda
+
+# 忽略圖片 (Images)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.bmp
+
+# 忽略數據 (Data) - 根據您的需求調整
+# 如果您有一個專門放數據的資料夾
+data/
+# 或是忽略特定數據檔案類型
+*.csv
+*.json
+*.db
+*.sqlite3
+*.parquet
+
+# 忽略常見的 IDE/系統 設定檔
+.vscode/
+.idea/
+.DS_Store
