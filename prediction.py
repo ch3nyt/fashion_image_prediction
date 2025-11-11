@@ -40,7 +40,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     image_cat = load_data(args)  # dictionary of image_info
-
+    print()
     # 分 season，用前 11 個禮拜當作訓練資料，預測最後 1 週的銷量
     '''
     沒有 targeted 特徵

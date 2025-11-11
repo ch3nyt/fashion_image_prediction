@@ -61,7 +61,7 @@ def run(args):
         if test_count < 5:
             test_count += 1
             print(info_object.text_description)
-        # info_object.get_embeddings(clip_model, clip_processor, device)
+        info_object.get_embeddings(clip_model, clip_processor, device)
 
     with open(args.save_path, "wb") as f:
         # 'wb' = Write Binary (二進位寫入)
