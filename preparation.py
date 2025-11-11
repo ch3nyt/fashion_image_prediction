@@ -18,7 +18,13 @@ def run(args):
 
     print(f"Loading VLM model: {args.model_name}")
     llava_model_name = "llava-hf/llava-1.5-7b-hf"
-    llava_model = LlavaForConditionalGeneration.from_pretrained(llava_model_name).to(device)
+    # ✅ 正確的 4-bit 載入程式碼 (修正版)
+    llava_model = LlavaForConditionalGeneration.from_pretrained(
+        llava_model_name,
+        load_in_4bit=True,          # 關鍵：啟用 4-bit 量化
+        torch_dtype=torch.float16,  # 雖然用 4-bit 載入，但計算仍用 16-bit
+        device_map="auto"           # 自動將模型分配到 GPU
+    )
     llava_processor = LlavaProcessor.from_pretrained(llava_model_name)
     llava_model.eval()
     clip_model = CLIPModel.from_pretrained(args.model_name).to(device)  # .to(device) 將模型權重移至 GPU (如果可用)
