@@ -17,10 +17,6 @@ def run(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     print(f"Loading VLM model: {args.model_name}")
-    blip_model_name = "Salesforce/blip-image-captioning-base"
-    # BLIP 模型 (用於生成)
-    // Todo: use LLaVA model and its processor instead, don't forget to import
-
     llava_model_name = "llava-hf/llava-1.5-7b-hf"
     llava_model = LlavaForConditionalGeneration.from_pretrained(llava_model_name).to(device)
     llava_processor = LlavaProcessor.from_pretrained(llava_model_name)
@@ -53,9 +49,13 @@ def run(args):
         image_cat[row["external_code"]].sales_trend.extend([row[str(i)] for i in range(12)])
 
     # --- 3. 產生 Embeddings ---
+    test_count = 0
     for _, info_object in tqdm(image_cat.items()):
         info_object.get_text_description(llava_model, llava_processor, device)
-        info_object.get_embeddings(clip_model, clip_processor, device)
+        if test_count < 5:
+            test_count += 1
+            print(info_object.text_description)
+        # info_object.get_embeddings(clip_model, clip_processor, device)
 
     with open(args.save_path, "wb") as f:
         # 'wb' = Write Binary (二進位寫入)
