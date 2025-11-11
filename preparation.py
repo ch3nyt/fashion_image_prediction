@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 import os
 from PIL import Image, ImageFile
-from transformers import BlipForConditionalGeneration, BlipProcessor, CLIPModel, CLIPProcessor
+from transformers import LlavaForConditionalGeneration, LlavaProcessor, CLIPModel, CLIPProcessor
 import pandas as pd 
 from tqdm import tqdm
 from image_helper import image_info
@@ -19,10 +19,12 @@ def run(args):
     print(f"Loading VLM model: {args.model_name}")
     blip_model_name = "Salesforce/blip-image-captioning-base"
     # BLIP 模型 (用於生成)
-    blip_model = BlipForConditionalGeneration.from_pretrained(blip_model_name).to(device)
-    # BLIP 處理器 (處理圖片和文字)
-    blip_processor = BlipProcessor.from_pretrained(blip_model_name)
-    blip_model.eval()
+    // Todo: use LLaVA model and its processor instead, don't forget to import
+
+    llava_model_name = "llava-hf/llava-1.5-7b-hf"
+    llava_model = LlavaForConditionalGeneration.from_pretrained(llava_model_name).to(device)
+    llava_processor = LlavaProcessor.from_pretrained(llava_model_name)
+    llava_model.eval()
     clip_model = CLIPModel.from_pretrained(args.model_name).to(device)  # .to(device) 將模型權重移至 GPU (如果可用)
     clip_processor = CLIPProcessor.from_pretrained(args.model_name)  # 載入對應的處理器 (它會處理圖片的 resize, crop, normalize)
     clip_model.eval() 
@@ -52,7 +54,7 @@ def run(args):
 
     # --- 3. 產生 Embeddings ---
     for _, info_object in tqdm(image_cat.items()):
-        info_object.get_text_description(blip_model, blip_processor, device)
+        info_object.get_text_description(llava_model, llava_processor, device)
         info_object.get_embeddings(clip_model, clip_processor, device)
 
     with open(args.save_path, "wb") as f:
