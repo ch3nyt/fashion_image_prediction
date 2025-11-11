@@ -101,7 +101,7 @@ class image_info:
             # 3. 生成文字 (token IDs)
             with torch.no_grad():
                 # .generate() 用於生成任務
-                output_ids = model.generate(**inputs, max_length=50) # 可設定最大長度
+                output_ids = model.generate(**inputs) # 可設定最大長度
 
             # 4. 將 token IDs 解碼回文字
             # [0] 是因為 batch size 為 1
