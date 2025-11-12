@@ -41,7 +41,7 @@ class image_info:
     
     def get_text_description(self, model, processor, device):
         """
-        [新函式] 使用 BLIP 產生圖片描述
+        [在 batch_size > 1 時不用]
         """
         try:
             image = Image.open(self.image_path).convert("RGB") # 1. 載入圖片
@@ -101,7 +101,7 @@ class image_info:
             # device_map="auto" 會自動處理設備分配
             inputs = processor(images=image, text=final_llava_prompt, return_tensors="pt")
             inputs = {k: v.to(device) for k, v in inputs.items()}
-            
+
             # 4. 取得輸入 token 的長度，以便稍後分離
             input_ids = inputs["input_ids"]
             input_length = input_ids.shape[1]
