@@ -100,7 +100,8 @@ class image_info:
             # 3. 準備輸入 (注意：已移除 .to(device))
             # device_map="auto" 會自動處理設備分配
             inputs = processor(images=image, text=final_llava_prompt, return_tensors="pt")
-
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+            
             # 4. 取得輸入 token 的長度，以便稍後分離
             input_ids = inputs["input_ids"]
             input_length = input_ids.shape[1]
