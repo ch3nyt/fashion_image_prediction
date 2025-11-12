@@ -47,9 +47,8 @@ class image_info:
             image = Image.open(self.image_path).convert("RGB") # 1. 載入圖片
 
             # 2. 準備輸入
-            # 我們可以給 BLIP 一個 "prompt" 來引導它
-            # prompt = "a picture of" 
-            prompt = f"""你是一位服飾商品企劃與屬性標註員。系統會提供一張單品圖片。
+            # 這份 instruciton 暫時不會用到 for 模型大小太小 跑不出來
+            prompt_instruction = f"""你是一位服飾商品企劃與屬性標註員。系統會提供一張單品圖片。
 任務：請只輸出一個可被 JSON.parse 解析的物件，描述該單品的關鍵屬性。不得加入任何額外文字、註解或反引號。
 原則：
 
@@ -96,20 +95,35 @@ class image_info:
 場景（多選）：日常｜通勤｜約會｜派對｜運動｜居家｜旅行｜正式場合｜unknown
 
 請僅輸出上述 JSON 物件；若任一欄位無法確定，將該欄位的 value 設為 "unknown" 並合理給出較低的 confidence。"""
-            inputs = processor(images=image, text=prompt, return_tensors="pt").to(device)
-
-            # 3. 生成文字 (token IDs)
-            with torch.no_grad():
-                # .generate() 用於生成任務
-                output_ids = model.generate(**inputs) # 可設定最大長度
-
-            # 4. 將 token IDs 解碼回文字
-            # [0] 是因為 batch size 為 1
-            caption = processor.decode(output_ids[0], skip_special_tokens=True)
             
-            # 5. 清理文字並儲存
-            caption = caption.replace(prompt, "").strip() # 移除我們給的 prompt
-            self.text_description = caption
+            final_llava_prompt = "USER: <image>\n請詳細描述這件衣服的類別、樣式、圖案和細節，以 json format 回傳。 ASSISTANT:"
+            # 3. 準備輸入 (注意：已移除 .to(device))
+            # device_map="auto" 會自動處理設備分配
+            inputs = processor(images=image, text=final_llava_prompt, return_tensors="pt")
+
+            # 4. 取得輸入 token 的長度，以便稍後分離
+            input_ids = inputs["input_ids"]
+            input_length = input_ids.shape[1]
+
+            # 5. 生成文字 (token IDs)
+            with torch.no_grad():
+                # 傳入 inputs 字典，並設定最大新 token 數量
+                output_ids = model.generate(
+                    **inputs, 
+                    max_new_tokens=150,  # 設定一個合理的上限，例如 150
+                    do_sample=False      # 使用 greedy decoding 獲取最可能的描述
+                )
+
+            # 6. 只解碼新生成的 token
+            # output_ids 包含 prompt + answer，我們只取 answer
+            # output_ids[0] 是因為 batch size 為 1
+            new_tokens = output_ids[0, input_length:]
+            
+            # 7. 將 token IDs 解碼回文字
+            caption = processor.decode(new_tokens, skip_special_tokens=True)
+            
+            # 8. 儲存
+            self.text_description = caption.strip()
 
         except FileNotFoundError:
             print(f"Caption 錯誤: 圖片未找到 {self.image_path}。")

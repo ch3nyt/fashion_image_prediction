@@ -27,6 +27,7 @@ def run(args):
     )
     llava_processor = LlavaProcessor.from_pretrained(llava_model_name)
     llava_model.eval()
+
     clip_model = CLIPModel.from_pretrained(args.model_name).to(device)  # .to(device) 將模型權重移至 GPU (如果可用)
     clip_processor = CLIPProcessor.from_pretrained(args.model_name)  # 載入對應的處理器 (它會處理圖片的 resize, crop, normalize)
     clip_model.eval() 
@@ -61,7 +62,7 @@ def run(args):
         if test_count < 5:
             test_count += 1
             print(info_object.text_description)
-        info_object.get_embeddings(clip_model, clip_processor, device)
+        # info_object.get_embeddings(clip_model, clip_processor, device)
 
     with open(args.save_path, "wb") as f:
         # 'wb' = Write Binary (二進位寫入)
